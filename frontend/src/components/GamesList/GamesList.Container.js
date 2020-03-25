@@ -11,32 +11,63 @@ import { GamesFilter } from 'components/GamesFilter';
 import { SpinnerLocal } from 'components/SpinnerLocal';
 
 import { gamesCleanup } from 'redux/games/actions';
-import { gamesFetch } from 'redux/games/utils';
+import { gamesFetch, genresFetch } from 'redux/games/utils';
 
-const GamesListContainer = ({ games, gamesCleanup, gamesFetch, isLoading }) => {
+const GamesListContainer = ({
+  games,
+  gamesCleanup,
+  gamesFetch,
+  genres,
+  genresFetch,
+  isLoading
+}) => {
   const location = useLocation();
   const history = useHistory();
   const parsedSearchQuery = qs.parse(location.search).query || '';
+  const parsedGenresQuery = qs.parse(location.search).genres || '';
 
   useEffect(() => {
     gamesCleanup();
-    const params = new URLSearchParams(location.search);
-    gamesFetch({ page: params.get('page'), query: params.get('query') });
-  }, [gamesCleanup, gamesFetch, location]);
+    if (genres.length === 0) genresFetch();
 
-  const handleSearch = search => {
+    const params = new URLSearchParams(location.search);
+    gamesFetch({
+      page: params.get('page'),
+      query: params.get('query'),
+      genres: params.get('genres')
+    });
+  }, [gamesCleanup, gamesFetch, genres.length, genresFetch, location]);
+
+  const handleSearch = (search, genres) => {
     const searchQuery = qs.stringify({
       //replace multiple whitespaces into 1 and trim
       query: search.replace(/\s\s+/g, ' ').trim()
     });
-    history.push(`/games?${searchQuery}`);
+
+    const genresQuery = qs.stringify({
+      genres: genres.join(',')
+    });
+
+    if (search && genres.length > 0) {
+      history.push(`/games?${searchQuery}&${genresQuery}`);
+    } else if (search && genres.length === 0) {
+      history.push(`/games?${searchQuery}`);
+    } else if (!search && genres.length > 0) {
+      history.push(`/games?${genresQuery}`);
+    } else {
+      history.push('/games');
+    }
   };
 
   return isLoading ? (
     <SpinnerLocal />
   ) : (
     <>
-      <GamesFilter onSearch={handleSearch} initQuery={parsedSearchQuery} />
+      <GamesFilter
+        onSearch={handleSearch}
+        initQuery={parsedSearchQuery}
+        initGenres={parsedGenresQuery}
+      />
       <GamesList
         games={games}
         gamesFetch={gamesFetch}
@@ -48,12 +79,14 @@ const GamesListContainer = ({ games, gamesCleanup, gamesFetch, isLoading }) => {
 
 const mapStateToProps = state => ({
   games: state.games.gamesInStore,
+  genres: state.games.genres,
   isLoading: state.games.loading
 });
 
 const mapDispatchToProps = {
   gamesCleanup,
-  gamesFetch
+  gamesFetch,
+  genresFetch
 };
 
 const EnhancedGamesListContainer = compose(
