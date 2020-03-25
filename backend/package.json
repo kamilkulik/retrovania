@@ -23,7 +23,7 @@
   "dependencies": {
     "@hapi/joi": "16.1.7",
     "app-module-path": "2.2.0",
-    "axios": "0.19.1",
+    "axios": "0.19.2",
     "bcrypt": "4.0.1",
     "bcryptjs": "2.4.3",
     "cors": "2.8.5",
