@@ -8,13 +8,16 @@ export const capitalizeFirstLetter = string => {
     .replace(/^./, str => str.toUpperCase()); // capitalize first letter
 };
 
-export const renderFormFields = values => {
-  return values.map((el, index) => (
+export const renderFormFields = (formProps, element = 'input') => {
+  return formProps.map((prop, index) => (
     <Input
+      element={element}
       key={index}
-      label={capitalizeFirstLetter(el)}
-      name={el}
-      type={el === 'confirmPassword' || el === 'password' ? 'password' : 'text'}
+      label={capitalizeFirstLetter(prop)}
+      name={prop}
+      type={
+        prop === 'confirmPassword' || prop === 'password' ? 'password' : 'text'
+      }
     />
   ));
 };
@@ -28,3 +31,7 @@ export const truncateString = (
   if (string.length <= maxLength) return string;
   return string.slice(0, string.lastIndexOf(separator, maxLength)) + endWith;
 };
+
+export const unixTimestampToDate = timestamp => new Date(timestamp * 1000);
+
+export const dateToUnixTimestamp = date => date.getTime() / 1000;

@@ -1,34 +1,63 @@
 import React from 'react';
 
-import { Button } from 'components/Button';
-import { Link } from 'components/Link';
+import { DateEditor } from 'components/DateEditor';
+
+import { unixTimestampToDate } from 'common/helpers';
 
 import * as S from './Cart.styles';
 
-const Cart = ({ cart, cartRemoveItem }) =>
+const Cart = ({ cart, removeItem }) =>
   cart && cart.length ? (
-    <S.CartTable>
-      <S.CartTableHead>
-        <tr>
-          <td>Game name</td>
-          <td>Actions</td>
-        </tr>
-      </S.CartTableHead>
-      <tbody>
-        {cart.map(product => (
-          <tr key={product._id}>
-            <td>
-              <Link to={`/games/${product._id}`}>{product.name}</Link>
-            </td>
-            <td>
-              <Button onClick={() => cartRemoveItem(product._id)}>
-                Delete
-              </Button>
-            </td>
+    <S.CartWrapper>
+      <S.CartTable>
+        <S.CartTableHead>
+          <tr>
+            <th>Game name</th>
+            <th>Rental from</th>
+            <th>Rental to</th>
+            <th>Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </S.CartTable>
+        </S.CartTableHead>
+        <S.CartTableBody>
+          {cart.map(game => (
+            <tr key={game._id}>
+              <td>
+                <S.CartLink to={`/games/${game._id}`}>{game.name}</S.CartLink>
+              </td>
+              <td>
+                {new Date(unixTimestampToDate(game.from)).toLocaleDateString()}
+              </td>
+              <td>
+                {new Date(unixTimestampToDate(game.to)).toLocaleDateString()}
+              </td>
+              <td>
+                <S.CartActionButton onClick={() => removeItem(game._id)}>
+                  <span>Delete</span>
+                  <S.TrashIcon />
+                </S.CartActionButton>
+                <DateEditor
+                  activator={({ setIsOpened }) => (
+                    <S.CartActionButton onClick={() => setIsOpened(true)}>
+                      <span>Edit</span>
+                      <S.PencilIcon />
+                    </S.CartActionButton>
+                  )}
+                  rentalFrom={unixTimestampToDate(game.from)}
+                  rentalTo={unixTimestampToDate(game.to)}
+                  game={game}
+                />
+              </td>
+            </tr>
+          ))}
+        </S.CartTableBody>
+      </S.CartTable>
+      <S.CartCheckout>
+        <p>
+          Games in cart: <S.Highlight>{cart.length}</S.Highlight>
+        </p>
+        <S.CartButton>Order</S.CartButton>
+      </S.CartCheckout>
+    </S.CartWrapper>
   ) : (
     <p>You haven't added any products to your cart yet.</p>
   );
